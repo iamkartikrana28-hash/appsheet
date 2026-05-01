@@ -6,6 +6,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 // ── CONFIGURATION ────────────────────────────────────────────
+const SPREADSHEET_ID     = '1agooC-wKRC9CeQf4BZYZTAo2GhoXu1OJKrKCRptk2Gg'; // ← Your Google Sheet ID
 const MASTER_SHEET_NAME  = 'Master';       // Tab name in your spreadsheet
 const ADMIN_SHEET_NAME   = 'AdminLog';     // Optional log tab for admin
 const ADMIN_SECRET       = 'ADMIN_SECRET_KEY_CHANGE_THIS'; // Change this!
@@ -62,6 +63,7 @@ const HEADERS = [
 
 // ── ENTRY POINT ──────────────────────────────────────────────
 function doGet(e) {
+  const callback = e.parameter.callback || '';
   try {
     const payload = JSON.parse(decodeURIComponent(e.parameter.data || '{}'));
     const { action } = payload;
@@ -75,22 +77,28 @@ function doGet(e) {
     else if (action === 'admin_force') result = adminForceStatus(payload);
     else                               result = { success: false, error: 'Unknown action' };
 
-    return jsonResponse(result);
+    return jsonResponse(result, callback);
   } catch(err) {
-    return jsonResponse({ success: false, error: err.message });
+    return jsonResponse({ success: false, error: err.message }, callback);
   }
 }
 
-function jsonResponse(data) {
+function jsonResponse(data, callback) {
+  const json = JSON.stringify(data);
+  if (callback) {
+    return ContentService
+      .createTextOutput(callback + '(' + json + ')')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
   return ContentService
-    .createTextOutput(JSON.stringify(data))
+    .createTextOutput(json)
     .setMimeType(ContentService.MimeType.JSON);
 }
 
 
 // ── SHEET HELPERS ────────────────────────────────────────────
 function getMasterSheet() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet   = ss.getSheetByName(MASTER_SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(MASTER_SHEET_NAME);
