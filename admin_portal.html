@@ -433,9 +433,26 @@ async function confirmForceStatus() {
 
 // ── HELPERS ──────────────────────────────────────────────────
 async function callAPI(payload) {
-  const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
-  const res = await fetch(url, { redirect: 'follow' });
-  return await res.json();
+  return new Promise((resolve, reject) => {
+    const cbName = 'jsonp_' + Date.now() + '_' + Math.floor(Math.random() * 9999);
+    const script = document.createElement('script');
+    const url = SCRIPT_URL + '?callback=' + cbName + '&data=' + encodeURIComponent(JSON.stringify(payload));
+
+    const timer = setTimeout(() => {
+      cleanup(); reject(new Error('Request timed out'));
+    }, 30000);
+
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cbName];
+      if (script.parentNode) script.parentNode.removeChild(script);
+    }
+
+    window[cbName] = function(data) { cleanup(); resolve(data); };
+    script.onerror = function() { cleanup(); reject(new Error('Network error')); };
+    script.src = url;
+    document.body.appendChild(script);
+  });
 }
 function showToast(msg, type='') {
   const d = document.createElement('div');
