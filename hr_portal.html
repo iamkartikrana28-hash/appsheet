@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HR Portal — Employee Data Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-mid: #4a4a6a;
+    --ink-light: #8888aa;
+    --surface: #ffffff;
+    --surface-2: #f4f4f8;
+    --surface-3: #eeeef5;
+    --border: #dddde8;
+    --accent: #3f51b5;
+    --accent-light: #e8eaf6;
+    --accent-dark: #283593;
+    --success: #2e7d32;
+    --success-light: #e8f5e9;
+    --warning: #e65100;
+    --warning-light: #fff3e0;
+    --danger: #c62828;
+    --danger-light: #ffebee;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 2px 12px rgba(63,81,181,0.08);
+    --shadow-lg: 0 8px 32px rgba(63,81,181,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--surface-2);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--accent);
+    color: #fff;
+    padding: 0 2rem;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(40,53,147,0.25);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-logo {
+    width: 32px; height: 32px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
+  }
+  .header-title { font-size: 15px; font-weight: 500; letter-spacing: 0.2px; }
+  .location-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 14px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-light);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: var(--ink-mid); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── MAIN LAYOUT ── */
+  main { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+
+  /* ── SECTION PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface-2);
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.6px; }
+  .card-body { padding: 20px; }
+
+  /* ── FORM GRID ── */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group.half { grid-column: span 2; }
+
+  label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  label .req { color: var(--danger); margin-left: 2px; }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="date"],
+  input[type="number"],
+  select,
+  textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(63,81,181,0.1);
+  }
+  input:read-only { background: var(--surface-3); color: var(--ink-mid); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── TOGGLE STATUS ── */
+  .status-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface-3);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .toggle-track {
+    width: 48px; height: 26px;
+    background: var(--ink-light);
+    border-radius: 13px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle-track.on { background: var(--success); }
+  .toggle-track.locked { opacity: 0.6; cursor: not-allowed; }
+  .toggle-thumb {
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 3px;
+    transition: left 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  }
+  .toggle-track.on .toggle-thumb { left: 25px; }
+  .toggle-label { font-size: 13px; font-weight: 500; }
+  .status-joined { color: var(--success); }
+  .status-pending { color: var(--warning); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent-dark);
+  }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-outline {
+    background: transparent;
+    color: var(--ink-mid);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { background: var(--surface-3); }
+  .btn-success {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+  }
+  .btn-danger {
+    background: var(--danger);
+    color: #fff;
+    border-color: var(--danger);
+  }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast-item {
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    box-shadow: var(--shadow-lg);
+    animation: slideIn 0.25s ease;
+    max-width: 320px;
+  }
+  .toast-item.success { background: var(--success); }
+  .toast-item.error { background: var(--danger); }
+  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    background: var(--surface-3);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink);
+    vertical-align: middle;
+  }
+  tr:hover td { background: var(--accent-light); }
+  tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-joined { background: var(--success-light); color: var(--success); }
+  .badge-pending { background: var(--warning-light); color: var(--warning); }
+
+  /* ── SEARCH & FILTER ── */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .toolbar input[type="text"] { flex: 1; min-width: 200px; }
+
+  /* ── SPINNER ── */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--ink-light);
+  }
+  .empty-state p { font-size: 14px; margin-top: 8px; }
+
+  /* ── CONFIG NOTICE ── */
+  #config-notice {
+    background: var(--warning-light);
+    border: 1px solid #ffcc02;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 1.5rem;
+    font-size: 13px;
+    color: var(--warning);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #config-notice code {
+    font-family: 'DM Mono', monospace;
+    background: rgba(230,81,0,0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  #config-notice.hidden { display: none; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(26,26,46,0.5);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  .modal-overlay.hidden { display: none; }
+  .modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    padding: 24px;
+    width: 100%;
+    max-width: 540px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+  @media (max-width: 600px) {
+    main { padding: 1rem; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-group.half { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CONFIG BANNER -->
+<div id="config-notice">
+  ⚠️ Set your Apps Script URL: open this file and update <code>APPS_SCRIPT_URL</code> at the top of the &lt;script&gt; section.
+</div>
+
+<header>
+  <div class="header-left">
+    <div class="header-logo">HR</div>
+    <span class="header-title">Employee Data Portal</span>
+  </div>
+  <span class="location-badge" id="location-display">Loading...</span>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="add">+ Add Employee</button>
+  <button class="tab-btn" data-tab="list">View &amp; Edit Records</button>
+</div>
+
+<main>
+  <!-- ── ADD EMPLOYEE PANEL ── -->
+  <div class="panel active" id="panel-add">
+    <form id="employee-form" novalidate>
+
+      <!-- GENERAL DETAILS -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">General Details</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Region <span class="req">*</span></label>
+              <input type="text" name="region" id="field-region" placeholder="e.g. North" required>
+            </div>
+            <div class="form-group">
+              <label>Branch <span class="req">*</span></label>
+              <input type="text" name="branch" id="field-branch" readonly>
+            </div>
+            <div class="form-group">
+              <label>Employee Name <span class="req">*</span></label>
+              <input type="text" name="name" placeholder="Full name" required>
+            </div>
+            <div class="form-group">
+              <label>Department <span class="req">*</span></label>
+              <input type="text" name="department" placeholder="e.g. Sales, HR" required>
+            </div>
+            <div class="form-group">
+              <label>Post / Designation <span class="req">*</span></label>
+              <input type="text" name="post" placeholder="e.g. Manager" required>
+            </div>
+            <div class="form-group">
+              <label>MSPIN No.</label>
+              <input type="text" name="mspin" placeholder="MSPIN number">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMMUNICATION DETAILS -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Communication Details</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Personal Mobile No. <span class="req">*</span></label>
+              <input type="text" name="mobile" placeholder="10-digit number" required>
+            </div>
+            <div class="form-group">
+              <label>Personal Email ID <span class="req">*</span></label>
+              <input type="email" name="email" placeholder="example@email.com" required>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUALIFICATIONS & CERTIFICATION -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Qualifications &amp; Certification</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Academic Qualification</label>
+              <input type="text" name="academic" placeholder="e.g. B.Com, MBA">
+            </div>
+            <div class="form-group">
+              <label>Professional Qualification</label>
+              <input type="text" name="professional" placeholder="e.g. CA, CFA">
+            </div>
+            <div class="form-group">
+              <label>Certification Status</label>
+              <select name="cert_status">
+                <option value="">— Select —</option>
+                <option>Certified</option>
+                <option>In Progress</option>
+                <option>Not Applicable</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Certification Details</label>
+              <input type="text" name="cert_details" placeholder="Certification name / number">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GENDER / MARITAL STATUS -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Gender &amp; Marital Status</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Gender <span class="req">*</span></label>
+              <select name="gender" required>
+                <option value="">— Select —</option>
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Marital Status</label>
+              <select name="marital_status">
+                <option value="">— Select —</option>
+                <option>Single</option>
+                <option>Married</option>
+                <option>Divorced</option>
+                <option>Widowed</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Date of Anniversary</label>
+              <input type="date" name="anniversary">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERSONAL DETAILS -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Personal Details</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Father's Name</label>
+              <input type="text" name="fathers_name" placeholder="Father's full name">
+            </div>
+            <div class="form-group">
+              <label>Date of Birth <span class="req">*</span></label>
+              <input type="date" name="dob" required>
+            </div>
+            <div class="form-group full">
+              <label>Present Address</label>
+              <textarea name="present_address" placeholder="Current residential address"></textarea>
+            </div>
+            <div class="form-group full">
+              <label>Permanent Address</label>
+              <textarea name="permanent_address" placeholder="Permanent address"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATE OF JOINING -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Date of Joining</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date of Joining <span class="req">*</span></label>
+              <input type="date" name="doj" required>
+            </div>
+            <div class="form-group">
+              <label>Nos. of Months in CACL</label>
+              <input type="number" name="months_cacl" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>As Per Rolls</label>
+              <input type="date" name="as_per_rolls">
+            </div>
+            <div class="form-group">
+              <label>As DMS</label>
+              <input type="date" name="as_dms">
+            </div>
+            <div class="form-group">
+              <label>Nos. of Months in DMS</label>
+              <input type="number" name="months_dms" placeholder="0" min="0">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROSS SALARY DETAILS -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Gross Salary Details</span></div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Basic (₹)</label>
+              <input type="number" name="basic" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+              <label>HRA (₹)</label>
+              <input type="number" name="hra" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+              <label>Conveyance (₹)</label>
+              <input type="number" name="convy" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+              <label>Gross Salary (₹)</label>
+              <input type="number" name="gross_salary" placeholder="0.00" min="0" id="gross-display" readonly>
+            </div>
+            <div class="form-group">
+              <label>On Rolls / Off Rolls / Arena / Nexa</label>
+              <select name="roll_type">
+                <option value="">— Select —</option>
+                <option>On Rolls</option>
+                <option>Off Rolls</option>
+                <option>Arena</option>
+                <option>Nexa</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOINING STATUS -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Joining Status</span>
+          <span style="font-size:11px; color:var(--ink-light);">Can be changed to Joined — cannot be reversed</span>
+        </div>
+        <div class="card-body">
+          <div class="status-toggle" id="status-toggle-add">
+            <div class="toggle-track" id="toggle-track-add">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span class="toggle-label status-pending" id="toggle-label-add">To Be Joined</span>
+          </div>
+          <input type="hidden" name="join_status" id="join-status-val" value="To Be Joined">
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" onclick="resetForm()">Clear Form</button>
+        <button type="submit" class="btn btn-primary" id="submit-btn">
+          <span id="submit-text">Save Employee</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ── VIEW / EDIT PANEL ── -->
+  <div class="panel" id="panel-list">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Employee Records — <span id="location-name-list">Your Location</span></span>
+        <span id="record-count" style="font-size:12px; color:var(--ink-light);"></span>
+      </div>
+      <div class="card-body">
+        <div class="toolbar">
+          <input type="text" id="search-input" placeholder="Search by name, department, post..." style="max-width:320px;">
+          <select id="status-filter" style="width:160px;">
+            <option value="">All statuses</option>
+            <option value="To Be Joined">To Be Joined</option>
+            <option value="Joined">Joined</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="loadRecords()">↻ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table id="records-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Post</th>
+                <th>Mobile</th>
+                <th>DOJ</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="records-tbody">
+              <tr><td colspan="8"><div class="empty-state">Click Refresh to load records</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay hidden" id="edit-modal">
+  <div class="modal">
+    <div class="modal-title">Edit Employee Record</div>
+    <div id="edit-form-body"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-edit-btn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  ⚙️  CONFIGURATION — UPDATE THESE VALUES
+// ═══════════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLAK3CrzsoyFJm73oCECIIWHvLBtrobAD2y8XJxnNYBXkU1dHuY6Hsqj41vFTx7Eoj/exec';
+
+// ═══════════════════════════════════════════════════════════════
+//  LOCATION DETECTION — from URL param  ?loc=BRANCHNAME
+// ═══════════════════════════════════════════════════════════════
+const urlParams   = new URLSearchParams(window.location.search);
+const LOCATION    = (urlParams.get('loc') || 'UNKNOWN').toUpperCase().trim();
+const IS_CONFIGURED = APPS_SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE';
+
+document.getElementById('location-display').textContent = LOCATION;
+document.getElementById('location-name-list').textContent = LOCATION;
+document.getElementById('field-branch').value = LOCATION;
+
+if (IS_CONFIGURED) document.getElementById('config-notice').classList.add('hidden');
+
+// ═══════════════════════════════════════════════════════════════
+//  TAB NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    if (btn.dataset.tab === 'list') loadRecords();
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  AUTO-CALCULATE GROSS SALARY
+// ═══════════════════════════════════════════════════════════════
+['basic','hra','convy'].forEach(f => {
+  document.querySelector(`[name="${f}"]`).addEventListener('input', calcGross);
+});
+function calcGross() {
+  const b = parseFloat(document.querySelector('[name=basic]').value) || 0;
+  const h = parseFloat(document.querySelector('[name=hra]').value) || 0;
+  const c = parseFloat(document.querySelector('[name=convy]').value) || 0;
+  document.getElementById('gross-display').value = (b + h + c).toFixed(2);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATUS TOGGLE (Add Form)
+// ═══════════════════════════════════════════════════════════════
+let addFormJoined = false;
+document.getElementById('toggle-track-add').addEventListener('click', () => {
+  if (addFormJoined) return; // already joined — locked
+  addFormJoined = true;
+  const track = document.getElementById('toggle-track-add');
+  const label = document.getElementById('toggle-label-add');
+  track.classList.add('on');
+  label.textContent = 'Joined';
+  label.className = 'toggle-label status-joined';
+  document.getElementById('join-status-val').value = 'Joined';
+  track.classList.add('locked');
+  track.title = 'Cannot revert — only admin can change this';
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  FORM SUBMIT — ADD EMPLOYEE
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('employee-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!IS_CONFIGURED) { showToast('Please configure APPS_SCRIPT_URL first', 'error'); return; }
+
+  const form = e.target;
+  if (!form.checkValidity()) { form.reportValidity(); return; }
+
+  const data = { action: 'add', location: LOCATION };
+  new FormData(form).forEach((val, key) => { data[key] = val; });
+  data.gross_salary = document.getElementById('gross-display').value;
+
+  setSubmitting(true);
+  try {
+    const res = await callAPI(data);
+    if (res.success) {
+      showToast('Employee saved successfully!', 'success');
+      resetForm();
+    } else {
+      showToast(res.error || 'Failed to save. Try again.', 'error');
+    }
+  } catch(err) {
+    showToast('Network error. Check your connection.', 'error');
+  }
+  setSubmitting(false);
+});
+
+function setSubmitting(on) {
+  const btn = document.getElementById('submit-btn');
+  const txt = document.getElementById('submit-text');
+  btn.disabled = on;
+  txt.innerHTML = on ? '<span class="spinner"></span> Saving...' : 'Save Employee';
+}
+
+function resetForm() {
+  document.getElementById('employee-form').reset();
+  document.getElementById('field-branch').value = LOCATION;
+  document.getElementById('gross-display').value = '';
+  addFormJoined = false;
+  const track = document.getElementById('toggle-track-add');
+  const label = document.getElementById('toggle-label-add');
+  track.classList.remove('on','locked');
+  label.textContent = 'To Be Joined';
+  label.className = 'toggle-label status-pending';
+  document.getElementById('join-status-val').value = 'To Be Joined';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LOAD RECORDS
+// ═══════════════════════════════════════════════════════════════
+let allRecords = [];
+
+async function loadRecords() {
+  if (!IS_CONFIGURED) { showToast('Please configure APPS_SCRIPT_URL first', 'error'); return; }
+  const tbody = document.getElementById('records-tbody');
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--ink-light);">Loading...</td></tr>';
+  try {
+    const res = await callAPI({ action: 'get', location: LOCATION });
+    if (res.success) {
+      allRecords = res.data || [];
+      renderTable(allRecords);
+      document.getElementById('record-count').textContent = `${allRecords.length} record${allRecords.length !== 1 ? 's' : ''}`;
+    } else {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">Error: ${res.error}</div></td></tr>`;
+    }
+  } catch(err) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">Failed to load. Check connection.</div></td></tr>';
+  }
+}
+
+function renderTable(records) {
+  const tbody = document.getElementById('records-tbody');
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const statusF = document.getElementById('status-filter').value;
+
+  const filtered = records.filter(r => {
+    const matchSearch = !search ||
+      (r.name||'').toLowerCase().includes(search) ||
+      (r.department||'').toLowerCase().includes(search) ||
+      (r.post||'').toLowerCase().includes(search);
+    const matchStatus = !statusF || r.join_status === statusF;
+    return matchSearch && matchStatus;
+  });
+
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">No records found</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((r, i) => `
+    <tr>
+      <td style="color:var(--ink-light)">${r.sno || i+1}</td>
+      <td style="font-weight:500">${esc(r.name)}</td>
+      <td>${esc(r.department)}</td>
+      <td>${esc(r.post)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${esc(r.mobile)}</td>
+      <td>${esc(r.doj)}</td>
+      <td><span class="badge ${r.join_status === 'Joined' ? 'badge-joined' : 'badge-pending'}">${esc(r.join_status)}</span></td>
+      <td>
+        <button class="btn btn-outline btn-sm" onclick="openEdit(${r.rowIndex})">Edit</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+document.getElementById('search-input').addEventListener('input', () => renderTable(allRecords));
+document.getElementById('status-filter').addEventListener('change', () => renderTable(allRecords));
+
+// ═══════════════════════════════════════════════════════════════
+//  EDIT MODAL
+// ═══════════════════════════════════════════════════════════════
+let editRowIndex = null;
+let editRecord   = null;
+
+async function openEdit(rowIndex) {
+  if (!IS_CONFIGURED) { showToast('Please configure APPS_SCRIPT_URL first', 'error'); return; }
+  editRowIndex = rowIndex;
+  editRecord   = allRecords.find(r => r.rowIndex === rowIndex);
+  if (!editRecord) return;
+
+  const isJoined = editRecord.join_status === 'Joined';
+
+  document.getElementById('edit-form-body').innerHTML = `
+    <div class="form-grid" style="margin-bottom:16px;">
+      <div class="form-group"><label>Name</label><input type="text" id="e_name" value="${esc(editRecord.name)}"></div>
+      <div class="form-group"><label>Department</label><input type="text" id="e_department" value="${esc(editRecord.department)}"></div>
+      <div class="form-group"><label>Post</label><input type="text" id="e_post" value="${esc(editRecord.post)}"></div>
+      <div class="form-group"><label>Mobile</label><input type="text" id="e_mobile" value="${esc(editRecord.mobile)}"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="e_email" value="${esc(editRecord.email)}"></div>
+      <div class="form-group"><label>Region</label><input type="text" id="e_region" value="${esc(editRecord.region)}"></div>
+      <div class="form-group"><label>MSPIN No.</label><input type="text" id="e_mspin" value="${esc(editRecord.mspin)}"></div>
+      <div class="form-group"><label>Date of Joining</label><input type="date" id="e_doj" value="${esc(editRecord.doj)}"></div>
+      <div class="form-group"><label>Basic (₹)</label><input type="number" id="e_basic" value="${esc(editRecord.basic)}"></div>
+      <div class="form-group"><label>HRA (₹)</label><input type="number" id="e_hra" value="${esc(editRecord.hra)}"></div>
+      <div class="form-group"><label>Conveyance (₹)</label><input type="number" id="e_convy" value="${esc(editRecord.convy)}"></div>
+      <div class="form-group"><label>Roll Type</label>
+        <select id="e_roll_type">
+          <option ${editRecord.roll_type==='On Rolls'?'selected':''}>On Rolls</option>
+          <option ${editRecord.roll_type==='Off Rolls'?'selected':''}>Off Rolls</option>
+          <option ${editRecord.roll_type==='Arena'?'selected':''}>Arena</option>
+          <option ${editRecord.roll_type==='Nexa'?'selected':''}>Nexa</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11.5px;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">Joining Status</label>
+      <div class="status-toggle">
+        <div class="toggle-track ${isJoined?'on locked':''}" id="edit-toggle-track" ${isJoined?'title="Cannot revert — only admin can change this"':''}>
+          <div class="toggle-thumb"></div>
+        </div>
+        <span class="toggle-label ${isJoined?'status-joined':'status-pending'}" id="edit-toggle-label">${isJoined?'Joined':'To Be Joined'}</span>
+      </div>
+    </div>
+    ${isJoined ? '<p style="font-size:12px;color:var(--ink-light);margin-top:4px;">Status is locked. Only admin can revert.</p>' : ''}
+  `;
+
+  let editJoined = isJoined;
+  if (!isJoined) {
+    document.getElementById('edit-toggle-track').addEventListener('click', () => {
+      if (editJoined) return;
+      editJoined = true;
+      document.getElementById('edit-toggle-track').classList.add('on','locked');
+      document.getElementById('edit-toggle-label').textContent = 'Joined';
+      document.getElementById('edit-toggle-label').className = 'toggle-label status-joined';
+    });
+  }
+  document.getElementById('edit-modal')._editJoined = () => editJoined;
+  document.getElementById('edit-modal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.add('hidden');
+  editRowIndex = null;
+  editRecord   = null;
+}
+
+async function saveEdit() {
+  const modal    = document.getElementById('edit-modal');
+  const joined   = modal._editJoined ? modal._editJoined() : false;
+  const saveBtn  = document.getElementById('save-edit-btn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  const data = {
+    action:      'edit',
+    location:    LOCATION,
+    rowIndex:    editRowIndex,
+    name:        document.getElementById('e_name').value,
+    department:  document.getElementById('e_department').value,
+    post:        document.getElementById('e_post').value,
+    mobile:      document.getElementById('e_mobile').value,
+    email:       document.getElementById('e_email').value,
+    region:      document.getElementById('e_region').value,
+    mspin:       document.getElementById('e_mspin').value,
+    doj:         document.getElementById('e_doj').value,
+    basic:       document.getElementById('e_basic').value,
+    hra:         document.getElementById('e_hra').value,
+    convy:       document.getElementById('e_convy').value,
+    roll_type:   document.getElementById('e_roll_type').value,
+    join_status: joined ? 'Joined' : 'To Be Joined',
+  };
+
+  try {
+    const res = await callAPI(data);
+    if (res.success) {
+      showToast('Record updated!', 'success');
+      closeEditModal();
+      loadRecords();
+    } else {
+      showToast(res.error || 'Failed to update.', 'error');
+    }
+  } catch(err) {
+    showToast('Network error.', 'error');
+  }
+  saveBtn.disabled = false;
+  saveBtn.textContent = 'Save Changes';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  API HELPER
+// ═══════════════════════════════════════════════════════════════
+async function callAPI(payload) {
+  const url = APPS_SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  const res  = await fetch(url, { redirect: 'follow' });
+  return await res.json();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════
+function showToast(msg, type = '') {
+  const div = document.createElement('div');
+  div.className = `toast-item ${type}`;
+  div.textContent = msg;
+  document.getElementById('toast').appendChild(div);
+  setTimeout(() => div.remove(), 4000);
+}
+
+function esc(v) {
+  return String(v || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Close modal on overlay click
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+</script>
+</body>
+</html>

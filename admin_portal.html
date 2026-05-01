@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal — HR Master Data</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e; --ink-mid: #4a4a6a; --ink-light: #8888aa;
+    --surface: #ffffff; --surface-2: #f4f4f8; --surface-3: #eeeef5;
+    --border: #dddde8;
+    --accent: #283593; --accent-light: #e8eaf6;
+    --success: #2e7d32; --success-light: #e8f5e9;
+    --warning: #e65100; --warning-light: #fff3e0;
+    --danger: #c62828; --danger-light: #ffebee;
+    --radius: 10px; --radius-sm: 6px;
+    --shadow: 0 2px 12px rgba(40,53,147,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--surface-2); color: var(--ink); min-height: 100vh; }
+
+  /* LOGIN SCREEN */
+  #login-screen {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #3949ab 100%);
+  }
+  .login-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 360px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  .login-logo {
+    width: 48px; height: 48px;
+    background: var(--accent);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 18px;
+    margin: 0 auto 1.5rem;
+  }
+  .login-title { text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .login-sub { text-align: center; font-size: 13px; color: var(--ink-light); margin-bottom: 1.5rem; }
+
+  /* ADMIN APP */
+  #admin-app { display: none; }
+  header {
+    background: var(--accent);
+    color: #fff; padding: 0 2rem; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(26,35,126,0.3);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .admin-badge {
+    background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 20px; padding: 4px 14px; font-size: 12px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+  /* STATS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 1.5rem; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px;
+    box-shadow: var(--shadow);
+  }
+  .stat-label { font-size: 11px; font-weight: 600; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .stat-val { font-size: 28px; font-weight: 600; }
+  .stat-val.blue { color: var(--accent); }
+  .stat-val.green { color: var(--success); }
+  .stat-val.orange { color: var(--warning); }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem; }
+  .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface-2); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.6px; }
+  .card-body { padding: 20px; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+  .toolbar input[type="text"] { flex: 1; min-width: 200px; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--surface-3); padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 600; color: var(--ink-mid); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: var(--accent-light); }
+  tr:last-child td { border-bottom: none; }
+
+  /* FORMS */
+  input[type="text"], input[type="password"], select {
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 9px 12px; width: 100%; outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(40,53,147,0.1); }
+
+  /* BUTTONS */
+  .btn { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; border-radius: var(--radius-sm); padding: 9px 18px; cursor: pointer; border: 1px solid transparent; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #1a237e; }
+  .btn-danger { background: var(--danger); color: #fff; border-color: var(--danger); }
+  .btn-danger:hover { background: #8e0000; }
+  .btn-outline { background: transparent; color: var(--ink-mid); border-color: var(--border); }
+  .btn-outline:hover { background: var(--surface-3); }
+  .btn-success { background: var(--success); color: #fff; border-color: var(--success); }
+  .btn-sm { padding: 5px 11px; font-size: 12px; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* BADGE */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-joined { background: var(--success-light); color: var(--success); }
+  .badge-pending { background: var(--warning-light); color: var(--warning); }
+
+  /* TOAST */
+  #toast { position: fixed; bottom: 2rem; right: 2rem; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast-item { background: var(--ink); color: #fff; padding: 12px 18px; border-radius: var(--radius); font-size: 13px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); animation: slideIn 0.25s ease; max-width: 320px; }
+  .toast-item.success { background: var(--success); }
+  .toast-item.error { background: var(--danger); }
+  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(26,26,46,0.5); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--surface); border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,0.25); padding: 24px; width: 100%; max-width: 440px; }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  .modal-sub { font-size: 13px; color: var(--ink-mid); margin-bottom: 20px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* SPINNER */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--ink-light); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN SCREEN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">A</div>
+    <div class="login-title">Admin Portal</div>
+    <div class="login-sub">HR Master Data Management</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div>
+        <label style="font-size:11.5px;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Admin Key</label>
+        <input type="password" id="admin-key-input" placeholder="Enter admin secret key" style="width:100%;" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div>
+        <label style="font-size:11.5px;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:6px;">Apps Script URL</label>
+        <input type="text" id="admin-url-input" placeholder="Paste your Web App URL" style="width:100%;">
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="doLogin()">Sign In as Admin</button>
+      <div id="login-error" style="font-size:12px;color:var(--danger);text-align:center;display:none;">Invalid key or connection error.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ADMIN APP ── -->
+<div id="admin-app">
+  <header>
+    <div class="header-left">
+      <span style="font-size:15px;font-weight:500;">HR Admin Dashboard</span>
+      <span class="admin-badge">Admin</span>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <span id="admin-url-display" style="font-size:11px;color:rgba(255,255,255,0.6);font-family:'DM Mono',monospace;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+      <button class="btn btn-outline btn-sm" style="color:#fff;border-color:rgba(255,255,255,0.3);" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-label">Total Employees</div><div class="stat-val blue" id="s-total">—</div></div>
+      <div class="stat-card"><div class="stat-label">Joined</div><div class="stat-val green" id="s-joined">—</div></div>
+      <div class="stat-card"><div class="stat-label">To Be Joined</div><div class="stat-val orange" id="s-pending">—</div></div>
+      <div class="stat-card"><div class="stat-label">Locations</div><div class="stat-val blue" id="s-locs">—</div></div>
+    </div>
+
+    <!-- MASTER TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Employee Records</span>
+        <button class="btn btn-primary btn-sm" onclick="loadAll()">↻ Refresh</button>
+      </div>
+      <div class="card-body">
+        <div class="toolbar">
+          <input type="text" id="admin-search" placeholder="Search name, location, department..." style="max-width:300px;" oninput="renderAdminTable()">
+          <select id="admin-loc-filter" style="width:160px;" onchange="renderAdminTable()"><option value="">All locations</option></select>
+          <select id="admin-status-filter" style="width:160px;" onchange="renderAdminTable()">
+            <option value="">All statuses</option>
+            <option>To Be Joined</option>
+            <option>Joined</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>S.No</th><th>Location</th><th>Name</th><th>Department</th>
+                <th>Post</th><th>Mobile</th><th>DOJ</th><th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-tbody">
+              <tr><td colspan="9"><div class="empty-state">Click Refresh to load all records</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay hidden" id="delete-modal">
+  <div class="modal">
+    <div class="modal-title">Delete Employee Record</div>
+    <div class="modal-sub" id="delete-modal-sub">Are you sure? This action cannot be undone and will permanently remove this record from the Master Sheet.</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn" onclick="confirmDelete()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- FORCE STATUS MODAL -->
+<div class="modal-overlay hidden" id="status-modal">
+  <div class="modal">
+    <div class="modal-title">Override Join Status</div>
+    <div class="modal-sub">Admin override: change this employee's status. This bypasses HR restrictions.</div>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:11.5px;font-weight:600;color:var(--ink-mid);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">New Status</label>
+      <select id="force-status-select" style="width:100%;">
+        <option value="To Be Joined">To Be Joined</option>
+        <option value="Joined">Joined</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeStatusModal()">Cancel</button>
+      <button class="btn btn-success" onclick="confirmForceStatus()">Apply Override</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let SCRIPT_URL   = '';
+let ADMIN_SECRET = '';
+let allRecords   = [];
+let pendingDeleteRow  = null;
+let pendingStatusRow  = null;
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function doLogin() {
+  const key = document.getElementById('admin-key-input').value.trim();
+  const url = document.getElementById('admin-url-input').value.trim();
+  if (!key || !url) { showLoginError(); return; }
+
+  SCRIPT_URL   = url;
+  ADMIN_SECRET = key;
+
+  try {
+    const res = await callAPI({ action: 'admin_get', secret: ADMIN_SECRET });
+    if (res.success) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-app').style.display = 'block';
+      document.getElementById('admin-url-display').textContent = url;
+      allRecords = res.data || [];
+      renderStats();
+      renderAdminTable();
+      buildLocFilter();
+    } else {
+      showLoginError();
+    }
+  } catch(err) {
+    showLoginError();
+  }
+}
+
+function showLoginError() {
+  document.getElementById('login-error').style.display = 'block';
+}
+
+function logout() {
+  SCRIPT_URL = ''; ADMIN_SECRET = ''; allRecords = [];
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-app').style.display = 'none';
+  document.getElementById('admin-key-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+// ── LOAD ALL ─────────────────────────────────────────────────
+async function loadAll() {
+  const tbody = document.getElementById('admin-tbody');
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--ink-light);">Loading...</td></tr>';
+  try {
+    const res = await callAPI({ action: 'admin_get', secret: ADMIN_SECRET });
+    if (res.success) {
+      allRecords = res.data || [];
+      renderStats();
+      renderAdminTable();
+      buildLocFilter();
+    } else {
+      showToast(res.error || 'Failed', 'error');
+    }
+  } catch(err) {
+    showToast('Network error', 'error');
+  }
+}
+
+// ── STATS ────────────────────────────────────────────────────
+function renderStats() {
+  const joined  = allRecords.filter(r => r.join_status === 'Joined').length;
+  const pending = allRecords.length - joined;
+  const locs    = new Set(allRecords.map(r => r.location)).size;
+  document.getElementById('s-total').textContent  = allRecords.length;
+  document.getElementById('s-joined').textContent  = joined;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-locs').textContent    = locs;
+}
+
+// ── LOCATION FILTER ──────────────────────────────────────────
+function buildLocFilter() {
+  const sel = document.getElementById('admin-loc-filter');
+  const locs = [...new Set(allRecords.map(r => r.location))].filter(Boolean).sort();
+  sel.innerHTML = '<option value="">All locations</option>' +
+    locs.map(l => `<option>${esc(l)}</option>`).join('');
+}
+
+// ── TABLE ────────────────────────────────────────────────────
+function renderAdminTable() {
+  const search  = document.getElementById('admin-search').value.toLowerCase();
+  const locF    = document.getElementById('admin-loc-filter').value;
+  const statusF = document.getElementById('admin-status-filter').value;
+
+  const filtered = allRecords.filter(r => {
+    const ms = !search ||
+      (r.name||'').toLowerCase().includes(search) ||
+      (r.location||'').toLowerCase().includes(search) ||
+      (r.department||'').toLowerCase().includes(search) ||
+      (r.post||'').toLowerCase().includes(search);
+    const ml = !locF || r.location === locF;
+    const mst = !statusF || r.join_status === statusF;
+    return ms && ml && mst;
+  });
+
+  const tbody = document.getElementById('admin-tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state">No records found</div></td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(r => `
+    <tr>
+      <td style="color:var(--ink-light);font-family:'DM Mono',monospace;font-size:12px">${r.sno}</td>
+      <td><span style="font-size:11px;font-weight:600;background:var(--accent-light);color:var(--accent);padding:3px 9px;border-radius:20px;">${esc(r.location)}</span></td>
+      <td style="font-weight:500">${esc(r.name)}</td>
+      <td>${esc(r.department)}</td>
+      <td>${esc(r.post)}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${esc(r.mobile)}</td>
+      <td>${esc(r.doj)}</td>
+      <td><span class="badge ${r.join_status==='Joined'?'badge-joined':'badge-pending'}">${esc(r.join_status)}</span></td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="openStatusModal(${r.rowIndex}, '${esc(r.join_status)}')">Status</button>
+        <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${r.rowIndex}, '${esc(r.name)}')">Delete</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// ── DELETE ───────────────────────────────────────────────────
+function openDeleteModal(rowIndex, name) {
+  pendingDeleteRow = rowIndex;
+  document.getElementById('delete-modal-sub').textContent =
+    `Delete "${name}"? This cannot be undone and will permanently remove this record from the Master Sheet.`;
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+function closeDeleteModal() {
+  pendingDeleteRow = null;
+  document.getElementById('delete-modal').classList.add('hidden');
+}
+async function confirmDelete() {
+  if (!pendingDeleteRow) return;
+  const btn = document.getElementById('confirm-delete-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>';
+  try {
+    const res = await callAPI({ action: 'admin_del', secret: ADMIN_SECRET, rowIndex: pendingDeleteRow });
+    if (res.success) {
+      showToast('Record deleted', 'success');
+      closeDeleteModal();
+      loadAll();
+    } else {
+      showToast(res.error || 'Delete failed', 'error');
+    }
+  } catch(err) { showToast('Network error', 'error'); }
+  btn.disabled = false; btn.textContent = 'Delete Permanently';
+}
+
+// ── FORCE STATUS ─────────────────────────────────────────────
+function openStatusModal(rowIndex, currentStatus) {
+  pendingStatusRow = rowIndex;
+  document.getElementById('force-status-select').value = currentStatus;
+  document.getElementById('status-modal').classList.remove('hidden');
+}
+function closeStatusModal() {
+  pendingStatusRow = null;
+  document.getElementById('status-modal').classList.add('hidden');
+}
+async function confirmForceStatus() {
+  if (!pendingStatusRow) return;
+  const newStatus = document.getElementById('force-status-select').value;
+  try {
+    const res = await callAPI({ action: 'admin_force', secret: ADMIN_SECRET, rowIndex: pendingStatusRow, join_status: newStatus });
+    if (res.success) {
+      showToast('Status updated', 'success');
+      closeStatusModal();
+      loadAll();
+    } else { showToast(res.error || 'Failed', 'error'); }
+  } catch(err) { showToast('Network error', 'error'); }
+}
+
+// ── HELPERS ──────────────────────────────────────────────────
+async function callAPI(payload) {
+  const url = SCRIPT_URL + '?data=' + encodeURIComponent(JSON.stringify(payload));
+  const res = await fetch(url, { redirect: 'follow' });
+  return await res.json();
+}
+function showToast(msg, type='') {
+  const d = document.createElement('div');
+  d.className = `toast-item ${type}`;
+  d.textContent = msg;
+  document.getElementById('toast').appendChild(d);
+  setTimeout(() => d.remove(), 4000);
+}
+function esc(v) {
+  return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+document.getElementById('delete-modal').addEventListener('click', e => { if(e.target===document.getElementById('delete-modal')) closeDeleteModal(); });
+document.getElementById('status-modal').addEventListener('click', e => { if(e.target===document.getElementById('status-modal')) closeStatusModal(); });
+</script>
+</body>
+</html>
